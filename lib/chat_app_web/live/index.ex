@@ -1,0 +1,127 @@
+defmodule ChatAppWeb.IndexLive do
+  use ChatAppWeb, :live_view
+
+  alias ChatApp.Chat
+
+  def render(assigns) do
+    ~H"""
+    <%= if !@avatar do %>
+      <div class="h-screen flex flex-col items-center justify-center">
+        <h2 class="text-center mb-8 text-xl">Who are you?</h2>
+        <.form
+          for={@avatar_form}
+          phx-submit="choose_avatar"
+          class="inline-grid grid-cols-4 gap-4 w-fit"
+        >
+          <button :for={avatar <- @avatars} name={@avatar_form[:avatar].name} value={avatar}>
+            <img src={"/images/#{avatar}.png"} class="size-18" />
+          </button>
+        </.form>
+      </div>
+    <% else %>
+      <div class="h-screen flex flex-col justify-end ">
+        <ul id="messages" phx-update="stream" class="flex flex-col-reverse gap-2 overflow-y-scroll">
+          <li :for={{dom_id, message} <- @streams.messages} id={dom_id}>
+            <div class="flex">
+              <img src={"/images/#{message.name}.png"} class="size-12 p-1 shrink-0" />
+              <div class="p-1 grow min-w-0 content-center">
+                <p class="break-words"><%= message.message %></p>
+              </div>
+              <%= if message.name == @avatar do %>
+                <button
+                  type="button"
+                  class="p-2 bg-black text-white w-20 shrink-0"
+                  phx-click="delete_message"
+                  phx-value-id={message.id}
+                  phx-disable-with="Deleting..."
+                >
+                  Delete
+                </button>
+              <% end %>
+            </div>
+          </li>
+        </ul>
+        <.form for={@message_form} phx-change="validate" phx-submit="send" class="mt-1 border-t">
+          <div class="flex">
+            <img src={"/images/#{@avatar}.png"} class="size-12 p-1" />
+            <input
+              id={@message_form[:message].id}
+              name={@message_form[:message].name}
+              value={@message_form[:message].value}
+              placeholder="Message"
+              autofocus
+              autocomplete="off"
+              phx-hook="MessageInput"
+              class="p-1 grow focus:outline-none"
+            />
+            <button class="p-2 bg-black text-white w-20" phx-disable-with="Sending...">Send</button>
+          </div>
+        </.form>
+      </div>
+    <% end %>
+    """
+  end
+
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> assign(
+       avatars:
+         ["beans", "duck", "otter", "potted-plant", "biting-lip", "turtle", "new-moon-face"]
+         |> Enum.shuffle()
+     )
+     |> assign(avatar: nil)
+     |> assign(avatar_form: to_form(%{}))}
+  end
+
+  def handle_event("choose_avatar", %{"avatar" => avatar}, socket) do
+    ChatAppWeb.Endpoint.subscribe("chat")
+
+    {:noreply,
+     socket
+     |> assign(avatar: avatar)
+     |> assign(message_form: to_form(Chat.change_message(%Chat.Message{})))
+     |> stream(:messages, Chat.list_messages())}
+  end
+
+  def handle_event("validate", %{"message" => messageParams}, socket) do
+    changeset = Chat.change_message(%Chat.Message{}, messageParams)
+    {:noreply, socket |> assign(message_form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("send", %{"message" => message_params}, socket) do
+    case Chat.create_message(message_params |> Map.put("name", socket.assigns.avatar)) do
+      {:ok, message} ->
+        ChatAppWeb.Endpoint.broadcast("chat", "new_message", %{message: message})
+
+        {:noreply,
+         socket
+         |> assign(message_form: to_form(Chat.change_message(%Chat.Message{})))
+         |> push_event("clear-input", %{})}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, socket |> assign(message_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("delete_message", %{"id" => id}, socket) do
+    message = Chat.get_message!(id)
+
+    case Chat.delete_message(message) do
+      {:ok, _message} ->
+        ChatAppWeb.Endpoint.broadcast("chat", "delete_message", %{message: message})
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info(%{event: "new_message", payload: %{message: message}}, socket) do
+    {:noreply, socket |> stream_insert(:messages, message, at: 0)}
+  end
+
+  def handle_info(%{event: "delete_message", payload: %{message: message}}, socket) do
+    {:noreply, socket |> stream_delete(:messages, message)}
+  end
+end
