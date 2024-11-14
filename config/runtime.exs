@@ -31,7 +31,6 @@ if config_env() == :prod do
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :chat_app, ChatApp.Repo,
-    # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6
@@ -48,7 +47,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  host = System.get_env("PHX_HOST") || "noats.nz"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :chat_app, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
@@ -62,6 +61,20 @@ if config_env() == :prod do
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
+    ],
+    https: [
+      port: 443,
+      cipher_suite: :strong,
+      keyfile:
+        System.get_env("NOATS_SSL_KEY_PATH") ||
+          raise("""
+          environment variable NOATS_SSL_KEY_PATH is missing.
+          """),
+      certfile:
+        System.get_env("NOATS_SSL_CERT_PATH") ||
+          raise("""
+          environment variable NOATS_SSL_CERT_PATH is missing.
+          """)
     ],
     secret_key_base: secret_key_base
 
