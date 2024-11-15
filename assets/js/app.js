@@ -27,14 +27,10 @@ let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("
 let Hooks = {
   MessageInput: {
     mounted() {
-      this.handleEvent("clear-input", () => {
+      this.handleEvent("clear-input-set-focus", () => {
         this.el.value = ""
+        this.el.focus()
       })
-    }
-  },
-  Modal: {
-    mounted() {
-      this.el.showModal()
     }
   }
 }

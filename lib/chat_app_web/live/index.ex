@@ -97,7 +97,7 @@ defmodule ChatAppWeb.IndexLive do
         {:noreply,
          socket
          |> assign(message_form: to_form(Chat.change_message(%Chat.Message{})))
-         |> push_event("clear-input", %{})}
+         |> push_event("clear-input-set-focus", %{})}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, socket |> assign(message_form: to_form(changeset))}
