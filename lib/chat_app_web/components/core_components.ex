@@ -106,6 +106,19 @@ defmodule ChatAppWeb.CoreComponents do
     """
   end
 
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block
+
+  def button(assigns) do
+    ~H"""
+    <button class={["p-2 bg-zinc-900 text-white w-20", @class]} {@rest}>
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
   attr :avatar, :string, required: true
   attr :class, :string, default: nil
 

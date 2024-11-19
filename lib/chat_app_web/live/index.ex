@@ -11,7 +11,7 @@ defmodule ChatAppWeb.IndexLive do
         <.form
           for={@avatar_form}
           phx-submit="choose_avatar"
-          class="inline-grid grid-cols-4 gap-4 w-fit"
+          class="flex flex-wrap justify-center gap-4 max-w-md"
         >
           <button :for={avatar <- @avatars} name={@avatar_form[:avatar].name} value={avatar}>
             <.avatar avatar={avatar} class="size-24" />
@@ -20,28 +20,27 @@ defmodule ChatAppWeb.IndexLive do
       </div>
     <% else %>
       <div class="h-screen flex flex-col justify-end ">
-        <ul id="messages" phx-update="stream" class="flex flex-col-reverse gap-2 overflow-y-scroll">
-          <li :for={{dom_id, message} <- @streams.messages} id={dom_id}>
+        <ul id="messages" phx-update="stream" class="flex flex-col-reverse overflow-y-scroll">
+          <li :for={{dom_id, message} <- @streams.messages} id={dom_id} class="mb-2">
             <div class="flex">
-              <.avatar avatar={message.name} class="size-12 p-1 shrink-0" />
-              <div class="p-1 grow min-w-0 content-center">
+              <.avatar avatar={message.name} class="size-12 p-1" />
+              <div class="p-2 grow min-w-0 content-center">
                 <p class="break-words"><%= message.message %></p>
               </div>
               <%= if message.name == @avatar do %>
-                <button
-                  type="button"
-                  class="p-2 bg-black text-white w-20 shrink-0"
+                <.button
+                  class="shrink-0"
                   phx-click="delete_message"
                   phx-value-id={message.id}
                   phx-disable-with="Deleting..."
                 >
                   Delete
-                </button>
+                </.button>
               <% end %>
             </div>
           </li>
         </ul>
-        <.form for={@message_form} phx-change="validate" phx-submit="send" class="mt-1 border-t">
+        <.form for={@message_form} phx-change="validate" phx-submit="send" class="border-t">
           <div class="flex">
             <.avatar avatar={@avatar} class="size-12 p-1" />
             <input
@@ -52,9 +51,9 @@ defmodule ChatAppWeb.IndexLive do
               autofocus
               autocomplete="off"
               phx-hook="MessageInput"
-              class="p-1 grow focus:outline-none"
+              class="pl-2 grow focus:outline-none min-w-0"
             />
-            <button class="p-2 bg-black text-white w-20" phx-disable-with="Sending...">Send</button>
+            <.button class="shrink-0" phx-disable-with="Sending...">Send</.button>
           </div>
         </.form>
       </div>
