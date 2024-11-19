@@ -106,6 +106,15 @@ defmodule ChatAppWeb.CoreComponents do
     """
   end
 
+  attr :avatar, :string, required: true
+  attr :class, :string, default: nil
+
+  def avatar(assigns) do
+    ~H"""
+    <img src={"/images/#{@avatar}.webp"} alt={@avatar} class={@class} width="160" height="160" />
+    """
+  end
+
   @doc """
   Renders a [Heroicon](https://heroicons.com).
 

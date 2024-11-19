@@ -14,7 +14,7 @@ defmodule ChatAppWeb.IndexLive do
           class="inline-grid grid-cols-4 gap-4 w-fit"
         >
           <button :for={avatar <- @avatars} name={@avatar_form[:avatar].name} value={avatar}>
-            <img src={"/images/#{avatar}.png"} class="size-18" />
+            <.avatar avatar={avatar} class="size-24" />
           </button>
         </.form>
       </div>
@@ -23,7 +23,7 @@ defmodule ChatAppWeb.IndexLive do
         <ul id="messages" phx-update="stream" class="flex flex-col-reverse gap-2 overflow-y-scroll">
           <li :for={{dom_id, message} <- @streams.messages} id={dom_id}>
             <div class="flex">
-              <img src={"/images/#{message.name}.png"} class="size-12 p-1 shrink-0" />
+              <.avatar avatar={message.name} class="size-12 p-1 shrink-0" />
               <div class="p-1 grow min-w-0 content-center">
                 <p class="break-words"><%= message.message %></p>
               </div>
@@ -43,7 +43,7 @@ defmodule ChatAppWeb.IndexLive do
         </ul>
         <.form for={@message_form} phx-change="validate" phx-submit="send" class="mt-1 border-t">
           <div class="flex">
-            <img src={"/images/#{@avatar}.png"} class="size-12 p-1" />
+            <.avatar avatar={@avatar} class="size-12 p-1" />
             <input
               id={@message_form[:message].id}
               name={@message_form[:message].name}
@@ -66,9 +66,8 @@ defmodule ChatAppWeb.IndexLive do
     {:ok,
      socket
      |> assign(
-       avatars:
-         ["beans", "duck", "otter", "potted-plant", "biting-lip", "turtle", "new-moon-face"]
-         |> Enum.shuffle()
+       :avatars,
+       ["beans", "duck", "otter", "potted-plant", "biting-lip", "turtle", "new-moon-face"]
      )
      |> assign(avatar: nil)
      |> assign(avatar_form: to_form(%{}))}
