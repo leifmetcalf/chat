@@ -6,7 +6,7 @@ defmodule ChatAppWeb.IndexLive do
   def render(assigns) do
     ~H"""
     <%= if !@avatar do %>
-      <div class="h-screen flex flex-col items-center justify-center">
+      <div class="h-dvh flex flex-col items-center justify-center">
         <h2 class="text-center mb-8 text-xl">Who are you?</h2>
         <.form
           for={@avatar_form}
@@ -19,7 +19,7 @@ defmodule ChatAppWeb.IndexLive do
         </.form>
       </div>
     <% else %>
-      <div class="h-screen flex flex-col justify-end ">
+      <div class="h-dvh flex flex-col justify-end ">
         <ul id="messages" phx-update="stream" class="flex flex-col-reverse overflow-y-scroll">
           <li :for={{dom_id, message} <- @streams.messages} id={dom_id} class="mb-2">
             <div class="flex">
