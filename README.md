@@ -1,4 +1,4 @@
-[noats.nz](noats.nz)
+[noats.nz](https://noats.nz)
 # Build release
 ```
 export MIX_ENV=prod
